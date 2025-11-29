@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Try nyo nga ta tangina mababaliw nako</title>
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- EmailJS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; max-width: 500px; margin:auto; }
+    input, textarea { width:100%; margin:10px 0; padding:10px; }
+    button { padding:10px 15px; background:#007bff; color:white; border:none; cursor:pointer; }
+  </style>
+</head>
+<body>
+
+<h2>Contact Form</h2>
+
+<form id="contactForm">
+  <input type="text" id="name" placeholder="Your Name" required />
+  <input type="email" id="email" placeholder="Email Address" required />
+  <textarea id="message" placeholder="Your Message" required></textarea>
+  <button type="submit">Send</button>
+</form>
+
+<p id="status"></p>
+
+<script>
+  // Initialize EmailJS
+  emailjs.init("T6YbbmoZ1DKLX9dER");
+
+  // Initialize Supabase
+  const supabaseClient = supabase.createClient(
+    "https://buycguoqqodidughqerx.supabase.co",
+    "sb_publishable_4B8_FDMIlgzBv7W3XmjsGA_Hfw2-Z_q"
+  );
+
+  document.getElementById("contactForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const message = document.getElementById("message").value;
+    const status = document.getElementById("status");
+
+    status.textContent = "Processing...";
+
+    // Save to Supabase
+    const { data, error } = await supabaseClient
+      .from("messages")
+      .insert([{ name, email, message }]);
+
+    if (error) {
+      console.error(error);
+      status.textContent = "❌ Failed saving to Supabase!";
+      return;
+    }
+
+    // Send Email
+    emailjs.send("service_xkm6tpl", "template_jci0bwo", {
+          from_name: name,     // matches {{from_name}}
+  email: email,        // matches {{email}}
+  message: message,    // matches {{message}}
+  time: new Date().toLocaleString()
+      })
+      .then(() => {
+        status.textContent = "Message sent successfully!";
+      })
+      .catch((err) => {
+        console.error("EmailJS Error:", err);
+        status.textContent = "Email sending failed. Please try again.";
+      });
+
+  });
+</script>
+
+
+</body>
+</html>
